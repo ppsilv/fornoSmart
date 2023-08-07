@@ -8,8 +8,9 @@ class CAlarme {
     uint8_t criaAlarme();
     bool verificaAlarme();
     void rodaAlarme();
-
-
+    bool getAlarmeStatus();
+    char * getHoradoAlarme();
+    
     const unsigned long bflagAlarmeSignTimeout = 300;
     const char iconeAlarme = 'A';
     const uint8_t iconeLinha=1;

@@ -62,6 +62,7 @@ extern int8_t * getVersion();
 extern LiquidCrystal_I2C lcd ;
 extern uint8_t calarmeTecla;
 extern uint8_t crtcTecla;
+extern CAlarme  *  calrm;
 
 extern void songIn(int buzzerPin);
 extern int8_t getKey();

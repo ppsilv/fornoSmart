@@ -196,3 +196,13 @@ void CAlarme::rodaAlarme()
     criaAlarme();
   }
 }
+
+bool CAlarme::getAlarmeStatus()
+{
+  return bflagAlarme;
+}
+
+char * CAlarme::getHoradoAlarme()
+{
+    return horaDoAlarme  ;
+}

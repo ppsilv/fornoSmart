@@ -58,6 +58,7 @@ void setup() {
 void loop() {
 	led.pisca();
   
+  
   crtc->getDate();
   crtc->getTime();
   

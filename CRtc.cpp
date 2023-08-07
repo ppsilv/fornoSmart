@@ -18,10 +18,12 @@ CRtc::CRtc()
 void CRtc::acertoRtc()
 {
     crtcTecla = 0;
+    lcd.cursor();
     acertaData();
     acertaHora();
     acertaDow();
     gravaRtc();
+    lcd.noCursor();
 }
 CRtc * CRtc::getInstancia()
 {
@@ -51,9 +53,15 @@ void CRtc::acertaData()
       coluna--;
       lcd.setCursor(coluna,linha);
     }else if( (key >= 0) && (key <= 9) ){
-      lcd.print(key);
-      cdata[coluna] = key+0x30;
-      coluna++;
+      if( coluna < 10){
+        lcd.print(key);
+        cdata[coluna] = key+0x30;
+        coluna++;
+        if( (coluna == 2) || (coluna == 5) ){
+          coluna++;
+        }
+        lcd.setCursor(coluna,linha);
+      }
     }
     key = getKey();
   }
@@ -82,11 +90,18 @@ void CRtc::acertaHora()
       coluna--;
       lcd.setCursor(coluna,linha);
     }else if( (key >= 0) && (key <= 9) ){
-      lcd.print(key);
-      chora[coluna] = key+0x30;
-      coluna++;
+      if( coluna < 8){
+        lcd.print(key);
+        chora[coluna] = key+0x30;
+        coluna++;
+        if( (coluna == 2) || (coluna == 5) ){
+          coluna++;
+        }
+        lcd.setCursor(coluna,linha);      
+      }
     }
     key = getKey();
+
   }
   Serial.print("Hora..: ");
   Serial.println(chora);
@@ -118,6 +133,7 @@ void CRtc::acertaDow()
     lcd.setCursor(coluna, linha);
     key = getKey();
   }
+  lcd.clear();
 }
 void CRtc::gravaRtc()
 {
@@ -126,6 +142,10 @@ void CRtc::gravaRtc()
   //domingo=1,segunda=2,terça=3,quarta=4,quinta=5,sexta=6,sabado=7
   //0123456789    01234567
   //28/07/2023    12:12:12
+  Serial.print("Data  ");
+  Serial.print(cdata);
+  Serial.print("  hora  ");
+  Serial.println(chora);
   x = cdata[8]; y = cdata[9];
   newtime.year  = 10 * (x - '0') + (y - '0');
   x = cdata[3]; y = cdata[4];
@@ -157,7 +177,7 @@ void CRtc::gravaRtc()
 }
 void CRtc::getTime()
 {
-  char data[12];
+  char data[12]={0};
   //lcd.setCursor(0,1);
   //lcd.print("                ");
   if( !rtc.get() ){
@@ -178,7 +198,7 @@ void CRtc::getTime()
 
 void CRtc::getDate()
 {
-  char data[12];
+  char data[12]={0};
   //lcd.setCursor(0,1);
   //lcd.print("                ");
   if( !rtc.get() ){
@@ -187,5 +207,12 @@ void CRtc::getDate()
       lcd.setCursor(0,0);
       lcd.print(data);
     }  
+  }
+}
+
+void CRtc::rodaRtcAcerto()
+{
+  if( crtcTecla == 2 ){
+    acertoRtc();
   }
 }

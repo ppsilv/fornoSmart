@@ -50,25 +50,24 @@ void setup() {
  // lcd.clear();
   led.configTimeout(400);
 
-//  songIn(ALTO_FALANTE);
+  songIn(ALTO_FALANTE);
   lcd.clear();
 }
 
 // the loop function runs over and over again forever
 void loop() {
 	led.pisca();
-  
-  
+    
   crtc->getDate();
   crtc->getTime();
   
   calrm->rodaAlarme();
+  crtc->rodaRtcAcerto();
   calrm->verificaAlarme();
   
   trataKeypad();
   
 	delay(50);
-  //  CAlarme::getInstancia()->verificaAlarme();
 }
 
 

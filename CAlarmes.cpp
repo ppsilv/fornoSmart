@@ -12,6 +12,7 @@ CAlarme::CAlarme()
 	linha = 0;
 	coluna = 0;
   calarmeTecla = 0;
+  CTimer alarmeTimeout = CTimer();
 }
 
 CAlarme * CAlarme::getInstancia()
@@ -37,7 +38,8 @@ void CAlarme::setAlarme(char * alarme)
 
   lalarme = ((unsigned long)hora * (unsigned long)3600) + ((unsigned long)minuto * (unsigned long)60)  ;
   lalarme *= (unsigned long)1000; 
-  alarmeTimeout = (unsigned long)millis() + (unsigned long)lalarme; 
+  //alarmeTimeout = (unsigned long)millis() + (unsigned long)lalarme; 
+  alarmeTimeout.setTimer(lalarme);
   bflagAlarmeSignTime = millis()+ bflagAlarmeSignTimeout;
 
   unsigned int hora1   = rtc.time.hour+hora;
@@ -70,6 +72,7 @@ void CAlarme::setAlarme(char * alarme)
 
   Serial.print("Hora do alarme: ");Serial.println(horaDoAlarme);
   lcd.clear();
+  lcd.noCursor();
 }
 
 uint8_t CAlarme::criaAlarme()
@@ -79,6 +82,7 @@ uint8_t CAlarme::criaAlarme()
   calarmeTecla = 0;
 
   lcd.clear();
+  lcd.cursor();
   
   lcd.print("Digite o Tempo");
   linha = 1;
@@ -147,11 +151,12 @@ bool CAlarme::verificaAlarme()
 {
   piscaIcone();
   if( bflagAlarme ){
-    if( millis() > alarmeTimeout){
+    if( alarmeTimeout.verifyTimer() ){
       bflagAlarme = false;
   sprintf(charVal, "%08ld", millis());
   Serial.print("Alarme terminou  millis(): ");
-  Serial.println(charVal);      
+  Serial.println(charVal);   
+      songIn(ALTO_FALANTE);   
       return true;
     }
   }

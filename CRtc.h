@@ -9,7 +9,8 @@ public:
     void acertoRtc();
     void getTime();
     void getDate();
-
+    void rodaRtcAcerto();
+    
 protected:
     CRtc();
 

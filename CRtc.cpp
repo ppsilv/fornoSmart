@@ -162,7 +162,7 @@ void CRtc::getTime()
   //lcd.print("                ");
   if( !rtc.get() ){
     if( !calrm->getAlarmeStatus() ){
-      sprintf(data,"%02d:%02d:%02d",rtc.time.hour,rtc.time.min,rtc.time.sec);
+      sprintf(data,"%02d:%02d:%02d     ",rtc.time.hour,rtc.time.min,rtc.time.sec);
       lcd.setCursor(0,1);
       lcd.print(data);
     }else{
@@ -183,7 +183,7 @@ void CRtc::getDate()
   //lcd.print("                ");
   if( !rtc.get() ){
     if( !calrm->getAlarmeStatus() ){
-      sprintf(data,"%02d/%02d/20%02d",rtc.time.day,rtc.time.month,rtc.time.year);
+      sprintf(data,"%02d/%02d/20%02d   ",rtc.time.day,rtc.time.month,rtc.time.year);
       lcd.setCursor(0,0);
       lcd.print(data);
     }  

@@ -145,6 +145,7 @@ uint8_t CAlarme::criaAlarme()
 
 bool CAlarme::verificaAlarme()
 {
+  piscaIcone();
   if( bflagAlarme ){
     if( millis() > alarmeTimeout){
       bflagAlarme = false;
@@ -153,7 +154,6 @@ bool CAlarme::verificaAlarme()
   Serial.println(charVal);      
       return true;
     }
-    piscaIcone();
   }
   return false;
 }

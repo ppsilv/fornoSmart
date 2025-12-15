@@ -40,12 +40,6 @@ void setup() {
 
 	lcd.setCursor(0,1);
 	lcd.print((char *) getVersion() );
-/*
-  lcd.setCursor(0,2);
-  lcd.print("Forno Eletrico 20231");
-  lcd.setCursor(0,3);
-  lcd.print((char *) getVersion() );
-*/
 
  // lcd.clear();
   led.configTimeout(400);

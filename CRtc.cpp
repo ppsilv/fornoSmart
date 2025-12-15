@@ -25,6 +25,7 @@ void CRtc::acertoRtc()
     gravaRtc();
     lcd.noCursor();
 }
+
 CRtc * CRtc::getInstancia()
 {
   if ( instancia == 0x00 ){
@@ -135,6 +136,7 @@ void CRtc::acertaDow()
   }
   lcd.clear();
 }
+
 void CRtc::gravaRtc()
 {
   uint8_t x, y, u8Status;

@@ -3,7 +3,7 @@
 #include <EEPROM.h>
 #include <stdint.h>
 #include "fornoSmart.h"
-#define SERIAL_NUMBER     "20230723"
+#define SERIAL_NUMBER     "20251215"
 #define MCU "UNO"
 #define VERSION_SIZE  0x10
 
@@ -41,7 +41,6 @@ int8_t * getVersion()
        EEPROM.write(i, 0xFF);
     }
   }
-
 
   uint8_t eepromByte0 = EEPROM.read(0);
   getWeekNumber();

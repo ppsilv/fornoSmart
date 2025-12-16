@@ -1,8 +1,6 @@
 # fornoSmart
 Reforma do forno marca smart,
 
-2 anos após a última compilação eu volto a esse programa
-
-1 - Compila com arduino.
-2 - Não sei quais dependências faltam.
-3 - Roda no arduino igualmente à versão anterior
+1 - Classe para fazer a configuração da data no RTC.
+2 - Classe para fazer a configuração da hora no RTC
+3 - Classe para criar um alarme de pronto, que deve sinalizar sonoro, visual e desligar as resistẽncias.

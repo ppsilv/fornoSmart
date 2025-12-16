@@ -52,14 +52,12 @@ void setup() {
 void loop() {
 	led.pisca();
     
+  trataKeypad();
   crtc->getDate();
   crtc->getTime();
-  
   calrm->rodaAlarme();
   crtc->rodaRtcAcerto();
   calrm->verificaAlarme();
-  
-  trataKeypad();
   
 	delay(200);
 }

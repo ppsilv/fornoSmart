@@ -23,7 +23,7 @@
 
 
 #define LED_FREQUENCY     500
-//#define PIN_BUZZER        
+      
 #define ALTO_FALANTE      11
 #define ERASE_EEPROM      12
 #define BUZZER_FREQUENCY  175

@@ -40,14 +40,14 @@ uint8_t piscaKeyEsc = 0;
 int8_t getKey(){
   return customKeypad.getKey();
 }
-
+/*
 int8_t getKeyBlock(){
   int8_t key;
   while( (key=customKeypad.getKey()) == NO_KEY ){}
   Serial.print("KEY ");Serial.println(key);
  return key;
 }
-
+*/
 void trataKeypad(){
   key = getKey();
   if( key == 'e' ){

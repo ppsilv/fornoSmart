@@ -61,21 +61,7 @@ void loop() {
   
   trataKeypad();
   
-	delay(50);
+	delay(200);
 }
 
 
-//void ftrataKeyboard(void *pvParameters __attribute__((unused)) )
-//{
-//
-//  while(true){
-//    vTaskDelay(10/portTICK_PERIOD_MS);
-//          
-//    if ( le_keyboard() > 0 ){
-//      
-//      // wait for a second
-//      vTaskDelay(2000/portTICK_PERIOD_MS);
-//      lcd.clear();
-//    }
-//  }
-//}

@@ -168,15 +168,7 @@ void CAlarme::piscaIcone()
   static bool bflagAlarmeSignStatus = false; 
   if( bflagAlarme ){
     if (millis() > bflagAlarmeSignTime ){
-  //sprintf(charVal, "%08ld",(unsigned long) millis());
-  //Serial.print(" printBflag  millis(): ");
-  //Serial.print(charVal);      
-
       bflagAlarmeSignTime = millis()+ bflagAlarmeSignTimeout;
-  //sprintf(charVal, "%08ld", (unsigned long)bflagAlarmeSignTime);
-  //Serial.print(" printBflag  bflagAlarmeSignTime: ");
-  //Serial.println(charVal);      
-
 
       if( ! bflagAlarmeSignStatus ){
         lcd.setCursor(iconeColuna,iconeLinha);

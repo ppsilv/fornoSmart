@@ -1,0 +1,140 @@
+(kicad_sch
+	(version 20250114)
+	(generator "eeschema")
+	(generator_version "9.0")
+	(uuid "6bc83dad-cbb1-4ef8-a10f-291a62fee621")
+	(paper "A4")
+	(lib_symbols)
+	(sheet
+		(at 19.558 72.644)
+		(size 42.672 9.652)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "6176e4d4-69fb-4d95-99e0-7a2d4ae6a9dc")
+		(property "Sheetname" "mcuEsp32"
+			(at 19.558 71.9324 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "esp32.kicad_sch"
+			(at 19.558 82.8806 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "fornoSmart"
+				(path "/6bc83dad-cbb1-4ef8-a10f-291a62fee621"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 19.558 47.244)
+		(size 43.434 12.7)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "67482896-4b81-471c-a1e5-cf2452903ed4")
+		(property "Sheetname" "Power"
+			(at 19.558 46.5324 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "pwr.kicad_sch"
+			(at 19.558 60.5286 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "fornoSmart"
+				(path "/6bc83dad-cbb1-4ef8-a10f-291a62fee621"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 19.558 21.336)
+		(size 42.672 14.224)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "933a1af9-5053-4126-94a9-2e39d63a5001")
+		(property "Sheetname" "fornoSmart"
+			(at 19.558 20.6244 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "fs.kicad_sch"
+			(at 19.558 36.1446 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "fornoSmart"
+				(path "/6bc83dad-cbb1-4ef8-a10f-291a62fee621"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)

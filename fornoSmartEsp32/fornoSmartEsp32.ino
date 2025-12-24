@@ -34,6 +34,11 @@ TaskHandle_t analog_read_task_handle;  // You can (don't have to) use this to be
 //Flags
 uint8_t clock_on = 1;
 
+uint8_t iconeStatus = 0;
+uint32_t blink_delay = 500;
+
+CTimer TPiscaIcone = CTimer(blink_delay);
+
 // The setup function runs once when you press reset or power on the board.
 void setup() {
   clock_on = 1;
@@ -56,8 +61,8 @@ void setup() {
   setupClock();
 
   // Set up two tasks to run independently.
-  uint32_t blink_delay = 500;  // Delay between changing state on LED pin
-
+    // Delay between changing state on LED pin
+/*
   xTaskCreate(
     Clock, "Clock"  // A name just for humans
     ,
@@ -69,7 +74,7 @@ void setup() {
     ,
     NULL  // Task handle is not used here - simply pass NULL
   );
-
+*/
   xTaskCreate(
     TaskLed, "Led Blink"  // A name just for humans
     ,
@@ -106,12 +111,23 @@ void loop() {
       calarmeon = 0;
     }
     alr->verificaAlarme();
+    if( clock_on){                     
+      loopClock(); 
+    }
+    if( TPiscaIcone.verifyTimerTimeout() ){
+      iconeStatus += 1;
+      iconeStatus &= 1;
+      alr->piscaIcone( iconeStatus );
+      TPiscaIcone.timerRenew(blink_delay);
+    }
+
+
 }
 
 /*--------------------------------------------------*/
 /*---------------------- Tasks ---------------------*/
 /*--------------------------------------------------*/
-
+/*
 void Clock(void *pvParameters) {  // This is a task.
   for (;;) {   
     if( clock_on){                     
@@ -119,7 +135,7 @@ void Clock(void *pvParameters) {  // This is a task.
     }
     delay(1000);
   }
-}
+}*/
 void TaskLed(void *pvParameters) {  // This is a task.
   uint32_t blink_delay1 = *((uint32_t *)pvParameters);
 
@@ -128,10 +144,8 @@ void TaskLed(void *pvParameters) {  // This is a task.
   for (;;) {                        
     digitalWrite(LED, HIGH); 
     delay(blink_delay1);
-    alr->piscaIcone(1);
     digitalWrite(LED, LOW);  
     delay(blink_delay1);
-    alr->piscaIcone(0);
   }
 }
 

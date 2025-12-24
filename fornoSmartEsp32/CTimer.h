@@ -12,10 +12,15 @@ public:
     void setTimer();//Cria o timer com o tempo já especificado na criação do objeto
     void setTimer(uint32_t time);//Cria o timer com o tempo especificado
     bool verifyTimer();          //Verifica se ocorreu timeout
+    bool getTimerStatus();
+    void setTimerStatus(bool status);
+    void timerRenew(uint16_t time);
+    bool verifyTimerTimeout();
 
 private:
   uint32_t  timeout;    //Contem o valor de millis() + time
-  uint16_t  time;       //O tempo que o alarme aguardará para disparar.
+  uint32_t  time;       //O tempo que o alarme aguardará para disparar.
+  bool status=false;
 };
 
 

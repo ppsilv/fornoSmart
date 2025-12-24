@@ -87,6 +87,7 @@ extern CAlarme * calrm;
 extern LiquidCrystal_I2C lcd;
 extern Keypad customKeypad;
 extern uint8_t clock_on;
+extern bool startAlarme;
 
 //Functions prototype
 extern void songIn(int buzzerPin);
@@ -101,7 +102,7 @@ extern void desliga_temp_control();
 
 //Mensagens
 //                    "1234567890123456"
-#define MSG_001       "FornoSmart    V2"
+#define MSG_001       "FornoSmart    V3"
 #define LED 18
 
 #endif

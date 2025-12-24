@@ -40,20 +40,21 @@ uint8_t CAlarme::criaAlarme()
   lcd.cursor_on();
   lcd.blink();
   linha = 1;
-  coluna = 0;  
+  coluna = 0;
   lcd.setCursor(coluna,linha);
   Serial.println(calarme);
   lcd.print(calarme);
   lcd.setCursor(coluna,linha);
   key = getKey();
-  
+  qtd_minutos = 0;
+  alarmeTimeout.setTimerStatus(false);
   while( key != KEY_ENTER){
     key = getKey();
     switch( key ){
       case KEY_ESC:
           key = NO_KEY;
           clock_on = 1;
-          bflagAlarme = 0;
+          bflagAlarme = false;
           lcd.clear();
           return 0;
           break;
@@ -83,9 +84,9 @@ uint8_t CAlarme::criaAlarme()
   }
   Serial.print("Valor do alarme: ");
   Serial.println(qtd_minutos);
-  alarmeTimeout.setTimer(qtd_minutos * 10);
+  alarmeTimeout.setTimer(qtd_minutos);
   clock_on = 1;
-  bflagAlarme = 1;
+  bflagAlarme = true;
   liga_temp_control();
   lcd.clear();
   lcd.cursor_off();
@@ -94,12 +95,15 @@ uint8_t CAlarme::criaAlarme()
 }
 void CAlarme::piscaIcone(uint8_t status)
 {
-  if( bflagAlarme ){
+  if( bflagAlarme && alarmeTimeout.getTimerStatus() ){
     lcd.setCursor(11,0);
     if(status)
       lcd.print("TIMER");
     else  
       lcd.print("     ");
+  }else if(bflagAlarme){
+    lcd.setCursor(11,0);
+    lcd.print("STOP");
   }
 }
 bool CAlarme::verificaAlarme()
@@ -109,11 +113,11 @@ bool CAlarme::verificaAlarme()
       lcd.clear();
       bflagAlarme = false;
       desliga_temp_control();
-  
       //songIn(ALTO_FALANTE);   
       return true;
     }
   }
+  alarmeTimeout.setTimerStatus(true);
   return false;
 }
 

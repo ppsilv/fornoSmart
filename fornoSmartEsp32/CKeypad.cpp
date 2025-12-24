@@ -12,7 +12,7 @@ F2        B     Chama rotina para acertar o relogio data, hora e dow(day of week
 
 #define ESC_SIMBOL    "@"
 
-
+bool startAlarme=false;
 
 char hexaKeys[] = {
                     'A', 'B', '#', '*',
@@ -71,6 +71,10 @@ void trataKeypad(){
     case KEY_F1:
         calarmeon = 1;
         clock_on = 0;
+        break;    
+    case KEY_F2:
+        
+        clock_on = 1;
         break;    
   }
 

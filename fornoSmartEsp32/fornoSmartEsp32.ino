@@ -1,18 +1,5 @@
-/* Basic Multi Threading Arduino Example
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
-// Please read file README.md in the folder containing this example.
+
 #include "fornoSmart.h"
-
-CAlarme * alr = CAlarme::getInstancia();
-
-// set the LCD number of columns and rows
-int lcdColumns = 16;
-int lcdRows = 2;
-LiquidCrystal_I2C lcd(0x27, lcdColumns, lcdRows);
 
 #if CONFIG_FREERTOS_UNICORE
 #define TASK_RUNNING_CORE 0
@@ -20,132 +7,162 @@ LiquidCrystal_I2C lcd(0x27, lcdColumns, lcdRows);
 #define TASK_RUNNING_CORE 1
 #endif
 
-#define ANALOG_INPUT_PIN A0
-
-// Define two tasks for Blink & AnalogRead.
-void Clock(void *pvParameters);
 void TaskLed(void *pvParameters);
 
-void setupClock();
-void loopClock();
+//State machine
+static uint8_t estado=1;
+static uint16_t tempo_para_assar=0;
+static uint16_t temperatura_para_assar=0;
 
-TaskHandle_t analog_read_task_handle;  // You can (don't have to) use this to be able to manipulate a task from somewhere else.
+void do_tela_inicial();
+void do_tela_menu1();
+void do_tela_edicao_timer();
+void do_tela_edicao_temperatura();
+void do_tela_aquecendo_resistencias();
+void do_tela_assando_comida();
 
-//Flags
-uint8_t clock_on = 1;
 
-uint8_t iconeStatus = 0;
-uint32_t blink_delay = 500;
-
-CTimer TPiscaIcone = CTimer(blink_delay);
-
-// The setup function runs once when you press reset or power on the board.
 void setup() {
-  clock_on = 1;
-  alr->setAlarm(false);
-  calarmeon = 0;
-  ota_setup();
-  
-  Wire.begin();
-  // initialize LCD
-  lcd.init();
-  // turn on LCD backlight                      
-  lcd.backlight();
-  lcd.setCursor(0, 0);
-  // print message
-  lcd.print(MSG_001);
+  setupLcd();
 
-  // Initialize serial communication at 115200 bits per second:
+  ota_setup();
+  Wire.begin();
   Serial.begin(115200);
 
+  setupSensor();
   setupClock();
+  setupResistencias();
 
-  // Set up two tasks to run independently.
-    // Delay between changing state on LED pin
-/*
-  xTaskCreate(
-    Clock, "Clock"  // A name just for humans
-    ,
-    2048  // The stack size can be checked by calling `uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);`
-    ,
-    (void *)&blink_delay  // Task parameter which can modify the task behavior. This must be passed as pointer to void.
-    ,
-    2  // Priority
-    ,
-    NULL  // Task handle is not used here - simply pass NULL
-  );
-*/
   xTaskCreate(
     TaskLed, "Led Blink"  // A name just for humans
     ,
     2048  // The stack size can be checked by calling `uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);`
     ,
-    (void *)&blink_delay  // Task parameter which can modify the task behavior. This must be passed as pointer to void.
+    NULL  // Task parameter which can modify the task behavior. This must be passed as pointer to void.
     ,
     2  // Priority
     ,
     NULL  // Task handle is not used here - simply pass NULL
   );
-  // Essa forma de criar a task posiciona no TASK_RUNNING_CORE,core especificado
-  /*
-  xTaskCreatePinnedToCore(
-    TaskAnalogRead, "Analog Read", 2048  // Stack size
-    ,
-    NULL  // When no parameter is used, simply pass NULL
-    ,
-    1  // Priority
-    ,
-    &analog_read_task_handle  // With task handle we will be able to manipulate with this task.
-    ,
-    TASK_RUNNING_CORE  // Core on which the task will run
-  );
-*/
-  // Now the task scheduler, which takes over control of scheduling individual tasks, is automatically started.
 }
 
 void loop() {
-    ArduinoOTA.handle();
-    trataKeypad();
-    if( calarmeon ){
-      alr->criaAlarme();
-      calarmeon = 0;
-    }
-    alr->verificaAlarme();
-    if( clock_on){                     
-      loopClock(); 
-    }
-    if( TPiscaIcone.verifyTimerTimeout() ){
-      iconeStatus += 1;
-      iconeStatus &= 1;
-      alr->piscaIcone( iconeStatus );
-      TPiscaIcone.timerRenew(blink_delay);
-    }
+  ArduinoOTA.handle();
 
+  switch( estado ){
+    case 1:
+        do_tela_inicial();
+        break;
+    case 2:
+        do_tela_menu1();
+        break;
+    case 3:
+        do_tela_edicao_timer();
+        break;
+    case 4:
+        do_tela_edicao_temperatura();
+        break;
+    case 5:
+        do_tela_aquecendo_resistencias();
+        break;
+    case 6:
+        do_tela_assando_comida();
+        break;        
+  }
 
 }
 
 /*--------------------------------------------------*/
 /*---------------------- Tasks ---------------------*/
 /*--------------------------------------------------*/
-/*
-void Clock(void *pvParameters) {  // This is a task.
-  for (;;) {   
-    if( clock_on){                     
-      loopClock(); 
-    }
-    delay(1000);
-  }
-}*/
-void TaskLed(void *pvParameters) {  // This is a task.
-  uint32_t blink_delay1 = *((uint32_t *)pvParameters);
+
+void TaskLed(void *pvParameters) {
 
   pinMode(LED, OUTPUT);
-
   for (;;) {                        
     digitalWrite(LED, HIGH); 
-    delay(blink_delay1);
+    delay(500);
     digitalWrite(LED, LOW);  
-    delay(blink_delay1);
+    delay(500);
   }
 }
 
+
+void do_tela_inicial(){
+  uint8_t key=0;
+  lcd.clear();
+  key = getKey();
+  while( key == NO_KEY){
+    loopClock();
+    lcd.setCursor(9, 1);
+    lcd.print("Press *");
+    key = getKey();
+    if ( key == KEY_ASTERISCO){
+      Serial.println("Digitado asterisco...");
+      estado = 2;
+    }
+  }
+}
+void do_tela_menu1(){
+  uint8_t key=0;
+  lcd.clear();
+  lcd.print("F1=Timer F2=Temp");
+  lcd.setCursor(0, 1);
+  lcd.print("Esc = Fim Digite");
+  key = getKey();
+  while( key == NO_KEY){
+    key = getKey();
+    if ( key == KEY_ESC){
+      Serial.println("Digitado esc...");
+      estado = 1;
+    }else if( key == KEY_F1){
+      Serial.println("Digitado F1...");
+      estado = 3;
+    }else if( key == KEY_F2){
+      Serial.println("Digitado F2...");
+      estado = 4;
+    }
+  }
+}
+void do_tela_edicao_timer(){
+  Serial.println("Edicao timer");  
+  estado = 1;
+
+  if( (tempo_para_assar=getNumber("Qual o Tempo")) > 0 ){
+    estado = 4;
+  }
+}
+void do_tela_edicao_temperatura(){
+  Serial.println("Edicao temperatura");  
+  estado = 1;
+  if( (temperatura_para_assar=getNumber("Qual Temperatura")) > 0 ){
+    estado = 5;
+  }
+}
+void do_tela_aquecendo_resistencias(){
+  liga_resistencias();
+  uint16_t temp_lida = getCelsius();
+
+  if ( temp_lida >= (temperatura_para_assar - (temperatura_para_assar/10) ) ){
+    Serial.println("Temperatura chegou no patamar de cosimento ");
+    estado = 6;
+  }
+}
+void do_tela_assando_comida(){
+  CTimer timer_para_assar= CTimer(tempo_para_assar);
+  estado = 1;
+  bool pisca_info=false;
+
+  Serial.println("Assando a comida...");
+  while(timer_para_assar.verifyTimerTimeout() != false){
+    loopClock();
+    if( pisca_info ){
+      lcd.setCursor(9, 1);
+      lcd.print("       ");
+    }else{
+      lcd.setCursor(9, 1);
+      lcd.print(tempo_para_assar);
+    }
+    delay(1000);
+  }
+}

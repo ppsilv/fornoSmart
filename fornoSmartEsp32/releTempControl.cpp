@@ -1,13 +1,26 @@
 #include "fornoSmart.h"
 
-void liga_temp_control()
+bool resistencias=false;
+
+void setupResistencias()
 {
-  Serial.println("Ligando as resistencias do forno...");
-  digitalWrite(RESISTENCIAS, ON); 
+  pinMode(RESISTENCIAS, OUTPUT);
 }
 
-void desliga_temp_control()
+void liga_resistencias()
 {
+  if( resistencias )
+    return;
+  Serial.println("Ligando as resistencias do forno...");
+  digitalWrite(RESISTENCIAS, ON); 
+  resistencias = true;
+}
+
+void desliga_resistencias()
+{
+  if( ! resistencias )
+    return;
   Serial.println("DESLigando as resistencias do forno...");
   digitalWrite(RESISTENCIAS, OFF); 
+  resistencias = false;
 }

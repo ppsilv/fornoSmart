@@ -14,6 +14,7 @@ extern void setTextColor(int cor, int fundo);
 extern void setCursor(int col, int row);
 extern void setTextSize(int size);
 extern void clear(int fundo);
+bool clock_on=false;
 
 std::string format_number(int number) {
     std::stringstream ss;
@@ -49,8 +50,7 @@ void getDateTime()
 
 void printDateTime()
  {
-  //Serial.println(sdata.c_str());
-  //Serial.println(shora.c_str());
+
 
   lcd.setCursor(0,0);
   lcd.print(sdata.c_str());  
@@ -72,12 +72,15 @@ void setupClock() {
   lastTime = shora;
   lastDate= sdata;
   printDateTime();
+  clock_on = true;
 }
 
 void loopClock() 
 {
+    if( ! clock_on ){                     
+      return; 
+    }
+  
   getDateTime();
   printDateTime();
-
-  //delay(1000);
 }

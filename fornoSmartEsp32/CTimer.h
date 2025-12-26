@@ -11,9 +11,9 @@ public:
     CTimer(uint16_t time);  
     void setTimer();//Cria o timer com o tempo já especificado na criação do objeto
     void setTimer(uint32_t time);//Cria o timer com o tempo especificado
-    bool verifyTimer();          //Verifica se ocorreu timeout
-    bool getTimerStatus();
-    void setTimerStatus(bool status);
+    //bool verifyTimer();          //Verifica se ocorreu timeout
+    //bool getTimerStatus();
+    //void setTimerStatus(bool status);
     void timerRenew(uint16_t time);
     bool verifyTimerTimeout();
 

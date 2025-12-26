@@ -16,7 +16,7 @@ class CAlarme {
     const char iconeAlarme = 'A';
     const uint8_t iconeLinha=1;
     const uint8_t iconeColuna=14;
-    void piscaIcone(uint8_t status);
+    void piscaIcone();
 
 protected:
   CAlarme();    

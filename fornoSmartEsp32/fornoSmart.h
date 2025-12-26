@@ -19,8 +19,6 @@
 #include <NetworkUdp.h>
 #include <ArduinoOTA.h>
 
-#include "CAlarmes.h"
-
 #include <time.h>
 #include <iostream>
 #include <string>
@@ -28,6 +26,7 @@
 #include <sstream>
 
 #include <Keypad.h>
+#include "CTimer.h"
 
 extern void ota_setup();
 
@@ -43,8 +42,8 @@ extern void ota_setup();
 
 #define KEY_F1 65
 #define KEY_F2 66
-#define KEY_#  35
-#define KEY_*  42
+#define KEY_ARROBA  35
+#define KEY_ASTERISCO  42
 #define KEY_1  49
 #define KEY_2  50
 #define KEY_3  51
@@ -80,29 +79,29 @@ extern void ota_setup();
 
 extern uint8_t eraseEprom;
 extern int8_t * getVersion();
-extern LiquidCrystal_I2C lcd ;
-extern uint8_t calarmeon;
-//extern uint8_t crtcTecla;
-extern CAlarme * calrm;
 extern LiquidCrystal_I2C lcd;
-extern Keypad customKeypad;
-extern uint8_t clock_on;
-extern bool startAlarme;
-
-//Functions prototype
+extern bool resistencias;
 extern void songIn(int buzzerPin);
+
+//prototypes
 extern int8_t getKey();
-extern int8_t getKeyBlock();
-extern void trataKeypad();
-extern unsigned int getHour();
-extern unsigned int getMinuto();
-extern void keypad_setup();
+extern void setupClock();
+extern void setupLcd();
+extern void setupSensor();
+extern void loopClock();
+extern bool lineEdit(char *msg);
+extern void setupResistencias();
+extern void liga_resistencias();
+extern void desliga_resistencias();
+extern float getCelsius();
 extern void liga_temp_control();
 extern void desliga_temp_control();
+extern int getNumber(char * msg);
+extern char * getText(char * msg);
 
 //Mensagens
 //                    "1234567890123456"
-#define MSG_001       "FornoSmart    V3"
+#define MSG_001       "FornoSmart    V5"    // ESP control time and temperature without PID
 #define LED 18
 
 #endif

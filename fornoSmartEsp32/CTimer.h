@@ -16,6 +16,7 @@ public:
     //void setTimerStatus(bool status);
     void timerRenew(uint16_t time);
     bool verifyTimerTimeout();
+    uint16_t getTimeToGo();
 
 private:
   uint32_t  timeout;    //Contem o valor de millis() + time

@@ -42,6 +42,10 @@ void CTimer::timerRenew(uint16_t time)
   this->time = time;
   this->timeout = millis() + this->time;
 }
+uint16_t CTimer::getTimeToGo()
+{
+  return ( millis() - this->timeout);
+}
 /*
 bool CTimer::getTimerStatus()
 {

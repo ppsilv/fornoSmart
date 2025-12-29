@@ -88,7 +88,7 @@ extern int8_t getKey();
 extern void setupClock();
 extern void setupLcd();
 extern void setupSensor();
-extern void loopClock();
+extern void telaInicial();
 extern bool lineEdit(char *msg);
 extern void setupResistencias();
 extern void liga_resistencias();

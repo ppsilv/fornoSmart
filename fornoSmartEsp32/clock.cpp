@@ -14,7 +14,6 @@ extern void setTextColor(int cor, int fundo);
 extern void setCursor(int col, int row);
 extern void setTextSize(int size);
 extern void clear(int fundo);
-bool clock_on=false;
 
 std::string format_number(int number) {
     std::stringstream ss;
@@ -63,7 +62,6 @@ void printDateTime()
 }
 
 void setupClock() {
-
   Serial.println("Contacting Time Server");
   configTime(3600 * timezone, daysavetime * 3600, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
 
@@ -72,15 +70,10 @@ void setupClock() {
   lastTime = shora;
   lastDate= sdata;
   printDateTime();
-  clock_on = true;
 }
 
-void loopClock() 
+void telaInicial() 
 {
-    if( ! clock_on ){                     
-      return; 
-    }
-  
   getDateTime();
   printDateTime();
 }

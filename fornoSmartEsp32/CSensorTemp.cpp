@@ -58,7 +58,6 @@ void set_temp_control()
 
   Serial.print("Valor da Temperatura: ");
   Serial.println(temp2set);
-  clock_on = 1;
   temperatura = temp2set;
 }
 */

@@ -14,6 +14,8 @@ static uint8_t estado=1;
 static uint16_t tempo_para_assar=0;
 static uint16_t temperatura_para_assar=0;
 
+
+
 void do_tela_inicial();
 void do_tela_menu1();
 void do_tela_edicao_timer();
@@ -21,6 +23,12 @@ void do_tela_edicao_temperatura();
 void do_tela_aquecendo_resistencias();
 void do_tela_assando_comida();
 
+#define TELAINICIAL 1
+#define TELAMENU1   2
+#define EDICAOTIMER 3
+#define EDICAOTEMP  4
+#define AQUECENDO   5
+#define ASSANDO     6
 
 void setup() {
   setupLcd();
@@ -50,22 +58,22 @@ void loop() {
   ArduinoOTA.handle();
 
   switch( estado ){
-    case 1:
+    case TELAINICIAL:
         do_tela_inicial();
         break;
-    case 2:
+    case TELAMENU1:
         do_tela_menu1();
         break;
-    case 3:
+    case EDICAOTIMER:
         do_tela_edicao_timer();
         break;
-    case 4:
+    case EDICAOTEMP:
         do_tela_edicao_temperatura();
         break;
-    case 5:
+    case AQUECENDO:
         do_tela_aquecendo_resistencias();
         break;
-    case 6:
+    case ASSANDO:
         do_tela_assando_comida();
         break;        
   }
@@ -93,13 +101,13 @@ void do_tela_inicial(){
   lcd.clear();
   key = getKey();
   while( key == NO_KEY){
-    loopClock();
+    telaInicial();
     lcd.setCursor(9, 1);
     lcd.print("Press *");
     key = getKey();
     if ( key == KEY_ASTERISCO){
       Serial.println("Digitado asterisco...");
-      estado = 2;
+      estado = TELAMENU1;
     }
   }
 }
@@ -108,35 +116,35 @@ void do_tela_menu1(){
   lcd.clear();
   lcd.print("F1=Timer F2=Temp");
   lcd.setCursor(0, 1);
-  lcd.print("Esc = Fim Digite");
+  lcd.print("Esc=Fim  Escolha");
   key = getKey();
   while( key == NO_KEY){
     key = getKey();
     if ( key == KEY_ESC){
       Serial.println("Digitado esc...");
-      estado = 1;
+      estado = TELAINICIAL;
     }else if( key == KEY_F1){
       Serial.println("Digitado F1...");
-      estado = 3;
+      estado = EDICAOTIMER;
     }else if( key == KEY_F2){
       Serial.println("Digitado F2...");
-      estado = 4;
+      estado = EDICAOTEMP;
     }
   }
 }
 void do_tela_edicao_timer(){
   Serial.println("Edicao timer");  
-  estado = 1;
+  estado = TELAINICIAL;
 
   if( (tempo_para_assar=getNumber("Qual o Tempo")) > 0 ){
-    estado = 4;
+    estado = EDICAOTEMP;
   }
 }
 void do_tela_edicao_temperatura(){
   Serial.println("Edicao temperatura");  
-  estado = 1;
+  estado = TELAINICIAL;
   if( (temperatura_para_assar=getNumber("Qual Temperatura")) > 0 ){
-    estado = 5;
+    estado = AQUECENDO;
   }
 }
 void do_tela_aquecendo_resistencias(){
@@ -144,25 +152,27 @@ void do_tela_aquecendo_resistencias(){
   uint16_t temp_lida = getCelsius();
 
   if ( temp_lida >= (temperatura_para_assar - (temperatura_para_assar/10) ) ){
-    Serial.println("Temperatura chegou no patamar de cosimento ");
-    estado = 6;
+    Serial.println("Temperatura chegou no patamar de cozimento ");
+    estado = ASSANDO;
   }
 }
 void do_tela_assando_comida(){
   CTimer timer_para_assar= CTimer(tempo_para_assar);
-  estado = 1;
+  estado = TELAINICIAL;
   bool pisca_info=false;
 
   Serial.println("Assando a comida...");
   while(timer_para_assar.verifyTimerTimeout() != false){
-    loopClock();
+    telaInicial();
     if( pisca_info ){
       lcd.setCursor(9, 1);
       lcd.print("       ");
     }else{
       lcd.setCursor(9, 1);
-      lcd.print(tempo_para_assar);
+      lcd.print(timer_para_assar.getTimeToGo());
     }
     delay(1000);
   }
+  tempo_para_assar = 0;
+  temperatura_para_assar = 0;
 }

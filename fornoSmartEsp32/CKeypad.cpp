@@ -55,17 +55,17 @@ void trataKeypad(){
         if( keyEsc == false ){
           keyEsc = true;
           escTimeout = millis() + escTime;
-          clock_on = 1;
+
         }else{
           keyEsc = false;
         }
         break;
     case KEY_F1:
         calarmeon = 1;
-        clock_on = 0;
+
         break;    
     case KEY_F2:        
-        clock_on = 0;
+
         set_temp_control();
         break;            
     case KEY_ARROBA:        

@@ -176,3 +176,13 @@ void do_tela_assando_comida(){
   tempo_para_assar = 0;
   temperatura_para_assar = 0;
 }
+void toneEnd(int buzzerPin){
+  
+  tone(buzzerPin, 350);
+  delay(500);
+  noTone(buzzerPin);
+
+  tone(buzzerPin, 700);
+  delay(500);
+  noTone(buzzerPin);
+}

@@ -141,25 +141,7 @@ void setup() {
 
 void loop() {
   ArduinoOTA.handle();
- /*
- while(1){
-  uint8_t key = getKey();
-  if( key == KEY_1){
-    toneInit();
-    Serial.println("Tem som no falante..?");
-  }
-  if( key == KEY_2){
-    toneInit1();
-    Serial.println("Tem som no falante..?");
-  }
-  if( key == KEY_3){
-    toneEnd();
-    Serial.println("Tem som no falante..?");
-  }
-  delay(100);
 
- }
-*/
   switch( estado ){
     case TELAINICIAL:
         do_tela_inicial();
@@ -229,6 +211,7 @@ void do_tela_inicial(){
   lcd.clear();
   key = getKey();
   while( key == NO_KEY ){
+    ArduinoOTA.handle();
     telaInicial();
     lcd.setCursor(9, 1);
     lcd.print("Press *");
@@ -256,6 +239,7 @@ void do_tela_menu1(){
   lcd.print("Ent=Inic.Esc=Fim");
   key = getKey();
   while( key == NO_KEY){
+    ArduinoOTA.handle();
     key = getKey();
     if ( key == KEY_ESC){
       Serial.println("Digitado esc...");

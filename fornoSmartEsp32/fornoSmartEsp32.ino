@@ -8,6 +8,7 @@
 #endif
 
 void TaskLed(void *pvParameters);
+void TaskTempControl(void *pvParameters);
 
 //State machine
 static uint8_t estado=1;
@@ -15,9 +16,9 @@ static uint32_t termino_tempo_para_assar=0;
 static uint16_t tempo_para_assar=0;
 static uint16_t tempo_para_assar_convertido=0;
 static uint16_t temperatura_para_assar=0;
-
 static uint16_t res_aquecida=0;
 
+static bool get_temp_flag = false;
 
 void do_tela_inicial();
 void do_tela_menu1();
@@ -33,6 +34,71 @@ void do_tela_assando_comida();
 #define AQUECENDO   5
 #define ASSANDO     6
 #define TELALOG     7
+void toneInit(){
+  tone(ALTO_FALANTE, 1500);
+  delay(250);
+  noTone(ALTO_FALANTE);
+
+  tone(ALTO_FALANTE, 750);
+  delay(250);
+  noTone(ALTO_FALANTE);
+}
+void toneInit1(){
+  tone(ALTO_FALANTE, 3000);
+  delay(250);
+  noTone(ALTO_FALANTE);
+
+  tone(ALTO_FALANTE, 1500);
+  delay(250);
+  noTone(ALTO_FALANTE);
+}
+void toneEnd(){
+  tone(ALTO_FALANTE, 1000);
+  delay(100);
+  noTone(ALTO_FALANTE);
+
+  tone(ALTO_FALANTE, 250);
+  delay(100);
+  noTone(ALTO_FALANTE);
+
+  tone(ALTO_FALANTE, 1000);
+  delay(100);
+  noTone(ALTO_FALANTE);
+
+  tone(ALTO_FALANTE, 250);
+  delay(100);
+  noTone(ALTO_FALANTE);
+
+  tone(ALTO_FALANTE, 1000);
+  delay(500);
+  noTone(ALTO_FALANTE);
+}
+void toneEnd1(){
+  tone(ALTO_FALANTE, 1500);
+  delay(100);
+  noTone(ALTO_FALANTE);
+
+  tone(ALTO_FALANTE, 1000);
+  delay(200);
+  noTone(ALTO_FALANTE);
+
+  tone(ALTO_FALANTE, 1500);
+  delay(100);
+  noTone(ALTO_FALANTE);
+
+  tone(ALTO_FALANTE, 1000);
+  delay(200);
+  noTone(ALTO_FALANTE);
+
+  tone(ALTO_FALANTE, 1500);
+  delay(400);
+  noTone(ALTO_FALANTE);
+}
+void tecla(){
+  tone(ALTO_FALANTE, 1000);
+  delay(150);
+  noTone(ALTO_FALANTE);
+}
 
 void setup() {
   setupLcd();
@@ -56,11 +122,44 @@ void setup() {
     ,
     NULL  // Task handle is not used here - simply pass NULL
   );
+  xTaskCreate(
+    TaskTempControl, "TempControl"  // A name just for humans
+    ,
+    2048  // The stack size can be checked by calling `uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);`
+    ,
+    NULL  // Task parameter which can modify the task behavior. This must be passed as pointer to void.
+    ,
+    2  // Priority
+    ,
+    NULL  // Task handle is not used here - simply pass NULL
+  );
+  pinMode(ALTO_FALANTE, OUTPUT); 
+  lcd.clear();
+  toneInit();
+  toneInit1();
 }
 
 void loop() {
   ArduinoOTA.handle();
+ /*
+ while(1){
+  uint8_t key = getKey();
+  if( key == KEY_1){
+    toneInit();
+    Serial.println("Tem som no falante..?");
+  }
+  if( key == KEY_2){
+    toneInit1();
+    Serial.println("Tem som no falante..?");
+  }
+  if( key == KEY_3){
+    toneEnd();
+    Serial.println("Tem som no falante..?");
+  }
+  delay(100);
 
+ }
+*/
   switch( estado ){
     case TELAINICIAL:
         do_tela_inicial();
@@ -102,6 +201,28 @@ void TaskLed(void *pvParameters) {
   }
 }
 
+void TaskTempControl(void *pvParameters) {
+  float temp_lida = getCelsius();
+  Serial.print("TaskTempControl:temperatura_para_assar ");
+  Serial.println(temperatura_para_assar);
+  bool flag_res_on = false;
+  for (;;) {              
+    if( get_temp_flag ){
+      temp_lida = getCelsius();
+      if( (temp_lida > (temperatura_para_assar + 2)) && flag_res_on ){
+        desliga_resistencias();
+        flag_res_on = false;
+      }
+      if( ( temp_lida < (temperatura_para_assar -2)) && !flag_res_on ){
+        liga_resistencias();
+        flag_res_on = true;
+      }
+    }else{
+     // Serial.println("Thread NOT ruuning.");
+    }
+    delay(500);
+  }
+}
 
 void do_tela_inicial(){
   uint8_t key=0;
@@ -118,6 +239,12 @@ void do_tela_inicial(){
     }if ( key == KEY_ARROBA ){
       Serial.println("Digitado asterisco...");
       estado = TELALOG;
+    }
+    if( key == KEY_1){
+      toneEnd();
+    }
+    if( key == KEY_2){
+      toneEnd1();
     }
   }
 }
@@ -180,15 +307,17 @@ void do_tela_edicao_temperatura(){
 void do_tela_aquecendo_resistencias(){
   CTimer timer_para_aquecer= CTimer(500);
   uint8_t pisca_info=1;
+  float temp_lida = getCelsius();
 
   lcd.clear();
   liga_resistencias();
-  uint16_t temp_lida = getCelsius();
   Serial.println("Aquecendo as resistencias");  
   while(1){
-    if ( temp_lida >= (temperatura_para_assar - (temperatura_para_assar/10) ) ){
+    temp_lida = getCelsius();
+    if ( temp_lida >= (float)(temperatura_para_assar - (temperatura_para_assar/10) ) ){
       Serial.println("Temperatura chegou no patamar de cozimento ");
       estado = ASSANDO;
+      get_temp_flag = true;
       break;
     }
     
@@ -208,18 +337,12 @@ void do_tela_aquecendo_resistencias(){
       lcd.setCursor(4, 1);
       lcd.print("AQUECENDO");
     }
-    res_aquecida++;
-    if( res_aquecida > 500){
-      Serial.println("Nao entendo...");
-      estado = ASSANDO;
-      res_aquecida=0;
-      break;
-    }
   }
 }
 
 void do_tela_assando_comida(){
-
+  uint8_t key=0;
+  float temp_lida = getCelsius();
  // CTimer timer_para_piscar=CTimer(500);
   time_t tempo_restante = termino_tempo_para_assar - (long)getTimeStamp();;
   
@@ -232,9 +355,14 @@ void do_tela_assando_comida(){
   Serial.println("Assando a comida...");
   termino_tempo_para_assar = tempo_para_assar_convertido + (long)getTimeStamp();
   while( termino_tempo_para_assar > (long)getTimeStamp() ){
+    temp_lida = getCelsius();
+    key = getKey();
+    if(key == KEY_ESC){
+      break;
+    }
     telaInicial();
     lcd.setCursor(9, 0);
-    lcd.print(temperatura_para_assar);
+    lcd.print(temp_lida);
     lcd.write(0xDF);
     lcd.write('C');
 
@@ -253,13 +381,16 @@ void do_tela_assando_comida(){
       sprintf(buffer,"%d:%02d:%02d\0",ltm.tm_hour-21,ltm.tm_min,ltm.tm_sec);
 
       lcd.setCursor(9, 1);
-      Serial.println(buffer);
+      //Serial.println(buffer);
 //      lcd.print(tempo_restante);
       lcd.print(buffer);
    // }
   }
   tempo_para_assar = 0;
   temperatura_para_assar = 0;
+  get_temp_flag = false;
+  desliga_resistencias();
+  toneEnd1();
 }
 void do_tela_log()
 {
@@ -279,14 +410,4 @@ void do_tela_log()
       estado = TELAMENU1;
     }
   }  
-}
-void toneEnd(int buzzerPin){
-  
-  tone(buzzerPin, 350);
-  delay(500);
-  noTone(buzzerPin);
-
-  tone(buzzerPin, 700);
-  delay(500);
-  noTone(buzzerPin);
 }

@@ -38,7 +38,10 @@ const uint16_t escTime = 1000 ;
 uint8_t piscaKeyEsc = 0;
 
 int8_t getKey(){
-  return kpd.getKey();
+  int8_t key = kpd.getKey();
+  if(key != NO_KEY)
+    tecla(); 
+  return key;
 }
 
 int8_t getKeyBlock(){
@@ -115,6 +118,7 @@ bool lineEdit(char *msg)
     char key_pressed = kpd.getKey();
     if(key_pressed)
     {
+      tecla();
       if( key_pressed == 'E'){
         Serial.print("Entrando true from RELEASED: ");
         Serial.println(cline);

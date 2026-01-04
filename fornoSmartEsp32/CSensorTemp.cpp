@@ -33,34 +33,10 @@ void setupSensor()
 
 float getCelsius()
 {
-    delay(100);
+    delay(400);
     thermoCouple.read();
     return thermoCouple.getCelsius();
 }
-/*
-bool verifyTemperature()
-{
-  if ( (verificaTemp == 10) && alr->getAlarmeStatus() ){
-    if( getCelsius() < temperatura  ){
-      liga_temp_control();
-    }else{
-      desliga_temp_control();
-    }
-    verificaTemp = 0;
-  }  
-
-}
-void set_temp_control()
-{
-  uint8_t col0,col1,col3,fl=0;
-  temp2set = 0;
-  temp2set = getNumber("Qual Temperatura");
-
-  Serial.print("Valor da Temperatura: ");
-  Serial.println(temp2set);
-  temperatura = temp2set;
-}
-*/
 
 void sensorLoop()
 {

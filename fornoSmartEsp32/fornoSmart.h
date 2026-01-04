@@ -36,7 +36,7 @@ extern void ota_setup();
 
 #define LED_FREQUENCY     500
 //#define PIN_BUZZER        
-#define ALTO_FALANTE      11
+#define ALTO_FALANTE      19
 #define ERASE_EEPROM      12
 #define BUZZER_FREQUENCY  175
 
@@ -103,7 +103,7 @@ extern void desliga_temp_control();
 extern int getNumber(char * msg);
 extern char * getText(char * msg);
 extern uint32_t getTimeStamp();
-
+extern void tecla();
 //Mensagens
 //                    "1234567890123456"
 #define MSG_001       "FornoSmart    V5"    // ESP control time and temperature without PID

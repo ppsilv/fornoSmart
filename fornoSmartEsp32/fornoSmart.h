@@ -28,6 +28,10 @@
 #include <Keypad.h>
 #include "CTimer.h"
 
+#include <stdio.h>
+#include <time.h>
+#include <string.h> // For memset, good practice
+
 extern void ota_setup();
 
 #define LED_FREQUENCY     500
@@ -98,6 +102,7 @@ extern void liga_temp_control();
 extern void desliga_temp_control();
 extern int getNumber(char * msg);
 extern char * getText(char * msg);
+extern uint32_t getTimeStamp();
 
 //Mensagens
 //                    "1234567890123456"

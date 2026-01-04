@@ -95,7 +95,7 @@ void lcdlineClear(char line)
 void lcdResetLine()
 {
   pos=0;
-  memset(cline, ' ', 16);
+  memset(cline, '\0', 17);
   lcdlineClear(1);  
 }
 bool lineEdit(char *msg)
@@ -106,53 +106,36 @@ bool lineEdit(char *msg)
   lcd.clear();
   lcd.print(msg);
   lcd.setCursor(0, 1);
-  kpd.getKey(); 
-  while(1){
-    if (kpd.getKeys())
+  memset(cline, '\0', 17);
+  Serial.print("Imprimindo cline: ");
+  Serial.println(cline);
+
+  int i=0;
+  while(1){    
+    char key_pressed = kpd.getKey();
+    if(key_pressed)
     {
-        for (int i=0; i<LIST_MAX; i++)   // Scan the whole key list.
-        {
-            if ( kpd.key[i].stateChanged )   // Only find keys that have changed state.
-            {
-                switch (kpd.key[i].kstate) 
-                {  // Report active key state : IDLE, PRESSED, HOLD, or RELEASED
-                case PRESSED:
-                    break;
-                case HOLD:
-                    break;
-                case RELEASED:
-                    if( kpd.key[i].kchar == 'E'){
-                      Serial.println(cline);
-                      pos=0;
-                      lcd.clear();
-                      lcd.cursor_off();
-                      lcd.blink_off();
-                      return true;
-                    }else if(kpd.key[i].kchar == 'S'){
-                      lcd.clear();
-                      lcd.cursor_off();
-                      lcd.blink_off();
-                      return false;  
-                    }else if( kpd.key[i].kchar == '#'){
-                      lcdResetLine();
-                    }else if( kpd.key[i].kchar == 'L' ){
-                      pos--;  
-                      lcdBackSpace(pos);
-                      lcd.setCursor(pos, 1);
-                    }else if( kpd.key[i].kchar == 'R' ){
-                      pos++;
-                      lcd.setCursor(pos, 1);
-                      cline[pos]='\0';
-                    }else{
-                      cline[pos++] = kpd.key[i].kchar;
-                      lcd.print(kpd.key[i].kchar);
-                    }
-                    break;
-                case IDLE:
-                    break;
-                }
-            }
-        }
+      if( key_pressed == 'E'){
+        Serial.print("Entrando true from RELEASED: ");
+        Serial.println(cline);
+        return true;
+      }if( key_pressed == 'L' ){
+        if( i < 1)
+          continue;
+        i--;
+        lcd.setCursor(i,1);
+        continue;
+      }
+      if( key_pressed == 'R' ){
+        i++;
+        lcd.setCursor(i,1);
+        continue;
+      }
+      Serial.println(key_pressed);
+      lcd.setCursor(i,1);
+      lcd.print(key_pressed);
+      cline[i]=key_pressed;
+      i=i+1;
     }
   }
   return false;

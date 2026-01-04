@@ -46,6 +46,8 @@ uint16_t CTimer::getTimeToGo()
 {
   return ( millis() - this->timeout);
 }
+
+
 /*
 bool CTimer::getTimerStatus()
 {

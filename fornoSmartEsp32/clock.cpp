@@ -34,7 +34,7 @@ void getDateTime()
 
   int imes = tmstruct.tm_mon + 1;
 
-  String ano = String((tmstruct.tm_year) + 1900) ;
+  String ano = String(tmstruct.tm_year-100);//String((tmstruct.tm_year) + 1900) ;
   std::string mes = format_number(imes );
   std::string dia = format_number(tmstruct.tm_mday);
   
@@ -49,8 +49,6 @@ void getDateTime()
 
 void printDateTime()
  {
-
-
   lcd.setCursor(0,0);
   lcd.print(sdata.c_str());  
   lcd.setCursor(0,1);
@@ -76,4 +74,32 @@ void telaInicial()
 {
   getDateTime();
   printDateTime();
+}
+
+
+uint32_t getTimeStamp() {
+    struct tm tm = {0}; // Initialize all members to zero (good practice)
+
+    // Set the date and time values
+    // Note: tm_year is years since 1900, tm_mon is months since January (0-11)
+    tm.tm_year = 2024 - 1900; // Example Year: 2024
+    tm.tm_mon  = 7 - 1;       // Example Month: July (6 for July)
+    tm.tm_mday = 15;          // Example Day: 15
+    tm.tm_hour = 10;          // Example Hour: 10
+    tm.tm_min  = 30;          // Example Minute: 30
+    tm.tm_sec  = 0;           // Example Second: 0
+    tm.tm_isdst = -1;         // Let mktime determine Daylight Saving Time
+
+    getLocalTime(&tm);
+
+    // Convert the struct tm to a time_t timestamp
+    time_t timestamp = mktime(&tm);
+
+    if (timestamp == (time_t)-1) {
+      Serial.printf("Error converting time to timestamp\n");
+    } else {
+     // Serial.printf("Timestamp (seconds since epoch): %ld\n", (long)timestamp);
+    }
+
+    return timestamp;
 }

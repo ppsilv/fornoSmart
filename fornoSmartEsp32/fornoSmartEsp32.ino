@@ -191,11 +191,11 @@ void TaskTempControl(void *pvParameters) {
   for (;;) {              
     if( get_temp_flag ){
       temp_lida = getCelsius();
-      if( (temp_lida > (temperatura_para_assar + 2)) && flag_res_on ){
+      if( (temp_lida > (temperatura_para_assar - 5)) && flag_res_on ){
         desliga_resistencias();
         flag_res_on = false;
       }
-      if( ( temp_lida < (temperatura_para_assar -2)) && !flag_res_on ){
+      if( ( temp_lida < (temperatura_para_assar )) && !flag_res_on ){
         liga_resistencias();
         flag_res_on = true;
       }

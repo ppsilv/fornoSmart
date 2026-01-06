@@ -209,6 +209,8 @@ void TaskTempControl(void *pvParameters) {
 void do_tela_inicial(){
   uint8_t key=0;
   lcd.clear();
+  float temp_lida = getCelsius();
+
   key = getKey();
   while( key == NO_KEY ){
     ArduinoOTA.handle();
@@ -228,6 +230,19 @@ void do_tela_inicial(){
     }
     if( key == KEY_2){
       toneEnd1();
+    }
+    if( key == KEY_3){
+      temp_lida = getCelsius();
+      lcd.setCursor(10, 0);
+      lcd.print(temp_lida);
+      delay(3000);
+      lcd.setCursor(10, 0);
+      lcd.print("     ");
+    }
+    if( key == KEY_9){
+      lcd.clear();
+      lcd.print("TE AMO LAISA");
+      delay(5000);
     }
   }
 }
@@ -292,6 +307,7 @@ void do_tela_aquecendo_resistencias(){
   CTimer timer_para_aquecer= CTimer(500);
   uint8_t pisca_info=1;
   float temp_lida = getCelsius();
+  uint8_t key=0;
 
   lcd.clear();
   liga_resistencias();
@@ -302,9 +318,14 @@ void do_tela_aquecendo_resistencias(){
       Serial.println("Temperatura chegou no patamar de cozimento ");
       estado = ASSANDO;
       get_temp_flag = true;
+      desliga_resistencias();
       break;
     }
-    
+    key = getKey();
+    if(key == KEY_ESC){
+      estado = TELAINICIAL;
+      break;
+    }
     lcd.setCursor(4, 0);
     lcd.print(temp_lida);
     lcd.write(0xDF);

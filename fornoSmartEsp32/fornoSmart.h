@@ -34,11 +34,11 @@
 
 extern void ota_setup();
 
-#define LED_FREQUENCY     500
+//#define LED_FREQUENCY     500
 //#define PIN_BUZZER        
 #define ALTO_FALANTE      19
 #define ERASE_EEPROM      12
-#define BUZZER_FREQUENCY  175
+//#define BUZZER_FREQUENCY  175
 
 #define ON                1
 #define OFF               0

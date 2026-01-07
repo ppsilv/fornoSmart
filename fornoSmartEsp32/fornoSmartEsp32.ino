@@ -176,14 +176,98 @@ void TaskLed(void *pvParameters) {
 
   pinMode(LED, OUTPUT);
   for (;;) {                        
-    digitalWrite(LED, HIGH); 
+    //digitalWrite(LED, HIGH); 
+    analogWrite( LED, 25);
     delay(500);
-    digitalWrite(LED, LOW);  
+    analogWrite( LED, 0);
     delay(500);
   }
 }
 
 void TaskTempControl(void *pvParameters) {
+  Serial.print("TaskTempControl:temperatura_para_assar ");
+  Serial.println(temperatura_para_assar);
+
+  //PID Section
+  //I/O
+  int PWM_pin = RESISTENCIAS;  //Pin for PWM signal to the MOSFET driver (the BJT npn with pullup)
+
+  //Variables
+  float set_temperature = temperatura_para_assar;            //Default temperature setpoint. Leave it 0 and control it with rotary encoder
+  float temperature_read = 0.0;
+  float PID_error = 1;
+  float previous_error = 0;
+  float elapsedTime, Time, timePrev;
+  float PID_value = 0;
+  float last_set_temperature = 0;
+
+  //PID constants
+  //////////////////////////////////////////////////////////
+  int kp = 90;   int ki = 30;   int kd = 80;
+  //////////////////////////////////////////////////////////
+  int PID_p = -1;    int PID_i = -30;    int PID_d = 0;
+ // float last_kp = 0;
+ // float last_ki = 0;
+ // float last_kd = 0;
+  get_temp_flag=false;  
+
+  Time = millis();
+  for (;;) {              
+    if( get_temp_flag ){
+      set_temperature = temperatura_para_assar;   
+      // First we read the real value of temperature
+      temperature_read = getCelsius();
+      //Next we calculate the error between the setpoint and the real value
+      PID_error = set_temperature - temperature_read + 2;
+      //Calculate the P value
+      PID_p = 0.01*kp * PID_error;
+      //Calculate the I value in a range on +-2
+      PID_i = 0.01*PID_i + (ki * PID_error);
+      
+      //For derivative we need real time to calculate speed change rate
+      timePrev = Time;                            // the previous time is stored before the actual time read
+      Time = millis();                            // actual time read
+      elapsedTime = (Time - timePrev) / 1000; 
+      //Now we can calculate the D calue
+      PID_d = 0.01*kd*((PID_error - previous_error)/elapsedTime);
+      //Final total PID value is the sum of P + I + D
+      PID_value = PID_p + PID_i + PID_d;
+
+      //We define PWM range between 0 and 255
+      if(PID_value < 0){    PID_value = 255;    }
+      if(PID_value > 255){    PID_value = 0;  }
+      //Now we can write the PWM signal to the mosfet on digital pin D3
+      //Since we activate the MOSFET with a 0 to the base of the BJT, we write 255-PID value (inverted)
+      analogWrite( PWM_pin, 255-PID_value );
+      previous_error = PID_error;     //Remember to store the previous error for next loop.
+
+      delay(125);
+/*
+      lcd.setCursor(0,0);
+      lcd.print(PID_p);
+      lcd.print("|");
+      lcd.print(PID_i);
+      lcd.print("|");
+      lcd.print(PID_d);
+
+      lcd.setCursor(0,1);
+      lcd.print("S:");
+      lcd.setCursor(2,1);
+      //lcd.print(set_temperature,1);
+      lcd.print(PID_value,1);
+      lcd.setCursor(9,1);
+      lcd.print("R:");
+      lcd.setCursor(11,1);
+      lcd.print(temperature_read,1);    
+*/
+    }else{
+      analogWrite( PWM_pin, 0 );
+    }
+    delay(125);
+  }
+}
+
+void TaskTempControNoPid(void *pvParameters) {
   float temp_lida = getCelsius();
   Serial.print("TaskTempControl:temperatura_para_assar ");
   Serial.println(temperatura_para_assar);
@@ -191,11 +275,11 @@ void TaskTempControl(void *pvParameters) {
   for (;;) {              
     if( get_temp_flag ){
       temp_lida = getCelsius();
-      if( (temp_lida > (temperatura_para_assar - 5)) && flag_res_on ){
+      if( (temp_lida > (temperatura_para_assar + 2)) && flag_res_on ){
         desliga_resistencias();
         flag_res_on = false;
       }
-      if( ( temp_lida < (temperatura_para_assar )) && !flag_res_on ){
+      if( ( temp_lida < (temperatura_para_assar -2)) && !flag_res_on ){
         liga_resistencias();
         flag_res_on = true;
       }
@@ -300,10 +384,56 @@ void do_tela_edicao_temperatura(){
   Serial.println("Edicao temperatura");  
   estado = TELAINICIAL;
   if( (temperatura_para_assar=getNumber("Qual Temperatura")) > 0 ){
+    temperatura_para_assar -= 2;
     estado = TELAINICIAL;
   }
 }
 void do_tela_aquecendo_resistencias(){
+  CTimer timer_para_aquecer= CTimer(500);
+  uint8_t pisca_info=1;
+  float temp_lida = getCelsius();
+  uint8_t key=0;
+
+  estado = ASSANDO;
+  get_temp_flag = true;
+  return;
+
+  lcd.clear();
+  get_temp_flag = true;
+  Serial.println("Aquecendo as resistencias");  
+  while(1){
+    temp_lida = getCelsius();
+    if ( temp_lida >= (float)(temperatura_para_assar - (temperatura_para_assar/10) ) ){
+      Serial.println("Temperatura chegou no patamar de cozimento ");
+      estado = ASSANDO;
+      get_temp_flag = true;
+      desliga_resistencias();
+      break;
+    }
+    key = getKey();
+    if(key == KEY_ESC){
+      estado = TELAINICIAL;
+      break;
+    }
+    lcd.setCursor(4, 0);
+    lcd.print(temp_lida);
+    lcd.write(0xDF);
+    lcd.write('C');
+    if( timer_para_aquecer.verifyTimerTimeout() ){
+      timer_para_aquecer.timerRenew(500);
+      pisca_info++;
+      pisca_info &= 0x1;
+    }
+    if( pisca_info ){
+      lcd.setCursor(4, 1);
+      lcd.print("         ");
+    }else{
+      lcd.setCursor(4, 1);
+      lcd.print("AQUECENDO");
+    }
+  }
+}
+void do_tela_aquecendo_resistenciasNoPid(){
   CTimer timer_para_aquecer= CTimer(500);
   uint8_t pisca_info=1;
   float temp_lida = getCelsius();
@@ -361,35 +491,23 @@ void do_tela_assando_comida(){
   termino_tempo_para_assar = tempo_para_assar_convertido + (long)getTimeStamp();
   while( termino_tempo_para_assar > (long)getTimeStamp() ){
     temp_lida = getCelsius();
+    delay(500);
     key = getKey();
     if(key == KEY_ESC){
       break;
     }
     telaInicial();
+    lcd.setCursor(0,0);
+    lcd.print("ASSANDO  ");
     lcd.setCursor(9, 0);
     lcd.print(temp_lida);
     lcd.write(0xDF);
     lcd.write('C');
-
-    //if( timer_para_piscar.verifyTimerTimeout() ){
-    //  timer_para_piscar.timerRenew(500);
-    //  pisca_info++;
-    //  pisca_info &= 0x1;
-  //
-      tempo_restante = termino_tempo_para_assar - (long)getTimeStamp();
-    //}    
-    //if( pisca_info ){
-    //  lcd.setCursor(9, 1);
-    //  lcd.print("       ");
-    //}else{
-      localtime_r(&tempo_restante, &ltm);
-      sprintf(buffer,"%d:%02d:%02d\0",ltm.tm_hour-21,ltm.tm_min,ltm.tm_sec);
-
-      lcd.setCursor(9, 1);
-      //Serial.println(buffer);
-//      lcd.print(tempo_restante);
-      lcd.print(buffer);
-   // }
+    tempo_restante = termino_tempo_para_assar - (long)getTimeStamp();
+    localtime_r(&tempo_restante, &ltm);
+    sprintf(buffer,"%d:%02d:%02d\0",ltm.tm_hour-21,ltm.tm_min,ltm.tm_sec);
+    lcd.setCursor(9, 1);
+    lcd.print(buffer);
   }
   tempo_para_assar = 0;
   temperatura_para_assar = 0;
@@ -401,12 +519,14 @@ void do_tela_log()
 {
   uint8_t key=0;
   lcd.clear();
-  lcd.print("Temperatura: ");
+  lcd.print("Temper.: ");
   lcd.print(temperatura_para_assar);
+  lcd.write(0xDF);
+  lcd.write('C');
   lcd.setCursor(0, 1);
   lcd.print("Tempo: ");  
   lcd.print(tempo_para_assar);
-  lcd.print("min");
+  lcd.print(" min");
   key = getKey();
   while( key == NO_KEY){
     key = getKey();

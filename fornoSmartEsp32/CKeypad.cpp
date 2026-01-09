@@ -101,21 +101,22 @@ void lcdResetLine()
   memset(cline, '\0', 17);
   lcdlineClear(1);  
 }
-bool lineEdit(char *msg)
+bool lineEdit(char *msg, char linha)
 {
-  lcdResetLine();
+  //lcdResetLine();
   lcd.cursor_on();
   lcd.blink(); 
-  lcd.clear();
+  lcd.setCursor(0, linha);
   lcd.print(msg);
-  lcd.setCursor(0, 1);
+  lcd.setCursor(0, linha+1);
   memset(cline, '\0', 17);
-  Serial.print("Imprimindo cline: ");
-  Serial.println(cline);
 
   int i=0;
   while(1){    
     char key_pressed = kpd.getKey();
+    if( key_pressed == KEY_ESC){
+      return false;
+    }
     if(key_pressed)
     {
       tecla();
@@ -127,16 +128,16 @@ bool lineEdit(char *msg)
         if( i < 1)
           continue;
         i--;
-        lcd.setCursor(i,1);
+        lcd.setCursor(i,linha+1);
         continue;
       }
       if( key_pressed == 'R' ){
         i++;
-        lcd.setCursor(i,1);
+        lcd.setCursor(i,linha+1);
         continue;
       }
       Serial.println(key_pressed);
-      lcd.setCursor(i,1);
+      lcd.setCursor(i,linha+1);
       lcd.print(key_pressed);
       cline[i]=key_pressed;
       i=i+1;
@@ -145,15 +146,15 @@ bool lineEdit(char *msg)
   return false;
 }
 
-int getNumber(char * msg)
+int getNumber(char * msg, char linha)
 {
-  if ( ! lineEdit(msg) )
+  if ( ! lineEdit(msg, linha) )
     return 0;
   return atoi(cline);
 }
-char * getText(char * msg)
+char * getText(char * msg, char linha)
 {
-  lineEdit(msg);
+  lineEdit(msg, linha);
   return cline;
 }
 

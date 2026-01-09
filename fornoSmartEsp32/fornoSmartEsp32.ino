@@ -1,4 +1,14 @@
+/*
+Alteração feita no arquivo LiquidCrystal_I2C.cpp
+            void LiquidCrystal_I2C::setCursor(uint8_t col, uint8_t row){
+linha 144     int row_offsets[] = { 0x00, 0x40, 0x10, 0x50 };
+              if ( row > _numlines ) {
+                row = _numlines-1;    // we count rows starting w/0
+              }
+              command(LCD_SETDDRAMADDR | (col + row_offsets[row]));
+            }
 
+*/
 #include "fornoSmart.h"
 
 #if CONFIG_FREERTOS_UNICORE
@@ -299,9 +309,14 @@ void do_tela_inicial(){
   while( key == NO_KEY ){
     ArduinoOTA.handle();
     telaInicial();
-    lcd.setCursor(9, 1);
-    lcd.print("Press *");
+    lcd.setCursor(0, 3);
+    lcd.print("Pressione *");
     key = getKey();
+    if ( key == NO_KEY ){
+      turn_off_back_light();
+    }else{
+      turn_on_back_light();
+    }    
     if ( key == KEY_ASTERISCO){
       Serial.println("Digitado asterisco...");
       estado = TELAMENU1;
@@ -323,6 +338,9 @@ void do_tela_inicial(){
       lcd.setCursor(10, 0);
       lcd.print("     ");
     }
+    if( key == KEY_4){
+      turn_back_light();
+    }
     if( key == KEY_9){
       lcd.clear();
       lcd.print("TE AMO LAISA");
@@ -334,7 +352,7 @@ void do_tela_menu1(){
   uint8_t key=0;
   lcd.clear();
   lcd.print("F1=Timer F2=Temp");
-  lcd.setCursor(0, 1);
+  lcd.setCursor(0, 3);
   lcd.print("Ent=Inic.Esc=Fim");
   key = getKey();
   while( key == NO_KEY){
@@ -364,29 +382,45 @@ void do_tela_menu1(){
     }
   }
 }
+static uint16_t tmp_tempo_para_assar=0;
+static uint16_t tmp_temperatura_para_assar=0;
 void do_tela_edicao_timer(){
   Serial.println("Edicao timer");  
   estado = TELAINICIAL;
-
-  if( (tempo_para_assar=getNumber("Quantos minutos?")) > 0 ){
-    estado = TELAINICIAL;
-
-    tempo_para_assar_convertido = tempo_para_assar*60;
-
-    termino_tempo_para_assar = tempo_para_assar_convertido + (long)getTimeStamp();
-    Serial.printf("Timestamp                            : %ld\n", (long)getTimeStamp());
-    Serial.printf("Timestamp            tempo para assar: %010d\n", tempo_para_assar);
-    Serial.printf("Timestamp tempo para assar convertido: %010d\n", tempo_para_assar_convertido);
-    Serial.printf("Timestamp    termino tempo para assar: %ld\n", (long)termino_tempo_para_assar);
+  lcd.clear();
+  if( (tmp_tempo_para_assar=getNumber("Quantos minutos?",0)) > 0 ){
+    if(tmp_tempo_para_assar > 0){
+      tempo_para_assar=tmp_tempo_para_assar;
+      tempo_para_assar_convertido = tempo_para_assar*60;
+      termino_tempo_para_assar = tempo_para_assar_convertido + (long)getTimeStamp();
+    }
   }
+  Serial.println("Edicao temperatura");  
+  if( (tmp_temperatura_para_assar=getNumber("Qual Temperatura",2)) > 0 ){
+    if( tmp_temperatura_para_assar > 0){
+      temperatura_para_assar = tmp_temperatura_para_assar - 2;
+    }
+  }
+
 }
 void do_tela_edicao_temperatura(){
   Serial.println("Edicao temperatura");  
   estado = TELAINICIAL;
-  if( (temperatura_para_assar=getNumber("Qual Temperatura")) > 0 ){
-    temperatura_para_assar -= 2;
-    estado = TELAINICIAL;
+  lcd.clear();
+  if( (tmp_temperatura_para_assar=getNumber("Qual Temperatura",0)) > 0 ){
+    if( tmp_temperatura_para_assar > 0){
+      temperatura_para_assar = tmp_temperatura_para_assar - 2;
+    }
   }
+  Serial.println("Edicao timer");  
+  if( (tmp_tempo_para_assar=getNumber("Quantos minutos?",2)) > 0 ){
+    if(tmp_tempo_para_assar > 0){
+      tempo_para_assar=tmp_tempo_para_assar;
+      tempo_para_assar_convertido = tempo_para_assar*60;
+      termino_tempo_para_assar = tempo_para_assar_convertido + (long)getTimeStamp();
+    }
+  }
+
 }
 void do_tela_aquecendo_resistencias(){
   CTimer timer_para_aquecer= CTimer(500);
@@ -514,6 +548,7 @@ void do_tela_assando_comida(){
   get_temp_flag = false;
   desliga_resistencias();
   toneEnd1();
+  turn_off_back_light();
 }
 void do_tela_log()
 {

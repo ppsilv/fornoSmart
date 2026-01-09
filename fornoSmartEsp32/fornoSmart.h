@@ -93,17 +93,21 @@ extern void setupClock();
 extern void setupLcd();
 extern void setupSensor();
 extern void telaInicial();
-extern bool lineEdit(char *msg);
+extern bool lineEdit(char *msg, char linha);
 extern void setupResistencias();
 extern void liga_resistencias();
 extern void desliga_resistencias();
 extern float getCelsius();
 extern void liga_temp_control();
 extern void desliga_temp_control();
-extern int getNumber(char * msg);
-extern char * getText(char * msg);
+extern int getNumber(char * msg, char linha);
+extern char * getText(char * msg, char linha);
 extern uint32_t getTimeStamp();
 extern void tecla();
+extern void turn_back_light();
+extern void turn_on_back_light();
+extern void turn_off_back_light();
+
 //Mensagens
 //                    "1234567890123456"
 #define MSG_001       "FornoSmart    V5"    // ESP control time and temperature without PID

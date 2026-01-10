@@ -115,6 +115,7 @@ void tecla(){
 }
 
 void setup() {
+
   Serial.begin(115200);
 
   Serial.println("Lcd setup");
@@ -679,6 +680,7 @@ void do_tela_assando_comida(){
   lcd.clear();
   Serial.println("Assando a comida...");
   termino_tempo_para_assar = tempo_para_assar_convertido + (long)getTimeStamp();
+  
   while( termino_tempo_para_assar > (long)getTimeStamp() ){
     temp_lida = getCelsius();
     delay(500);
@@ -686,13 +688,14 @@ void do_tela_assando_comida(){
     if(key == KEY_ESC){
       break;
     }
-    telaInicial();
+    //telaInicial();
     lcd.setCursor(0,0);
     lcd.print("ASSANDO  ");
     lcd.setCursor(9, 0);
     lcd.print(temp_lida);
     lcd.write(0xDF);
     lcd.write('C');
+    print_time();
     tempo_restante = termino_tempo_para_assar - (long)getTimeStamp();
     localtime_r(&tempo_restante, &ltm);
     sprintf(buffer,"%d:%02d:%02d\0",ltm.tm_hour-21,ltm.tm_min,ltm.tm_sec);
@@ -705,6 +708,7 @@ void do_tela_assando_comida(){
   desliga_resistencias();
   toneEnd1();
   turn_off_back_light();
+
 }
 void do_tela_log()
 {

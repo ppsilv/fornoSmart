@@ -46,6 +46,14 @@ void getDateTime()
   shora = hora +":"+ min  +":"+ seg; // hour.c_str();
 
 }
+void printTime()
+{
+  lcd.setCursor(0,1);
+  lcd.print(shora.c_str());
+
+  lastTime = shora;
+  lastDate = sdata;
+}
 
 void printDateTime()
  {
@@ -76,6 +84,11 @@ void telaInicial()
   printDateTime();
 }
 
+void print_time() 
+{
+  getDateTime();
+  printTime();
+}
 
 uint32_t getTimeStamp() {
     struct tm tm = {0}; // Initialize all members to zero (good practice)

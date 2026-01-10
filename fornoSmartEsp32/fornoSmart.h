@@ -50,6 +50,7 @@ extern void ota_setup();
 
 //#define LED_FREQUENCY     500
 //#define PIN_BUZZER        
+
 #define ALTO_FALANTE      19
 #define ERASE_EEPROM      12
 //#define BUZZER_FREQUENCY  175
@@ -122,6 +123,7 @@ extern void turn_back_light();
 extern void turn_on_back_light();
 extern void turn_off_back_light();
 extern float getCelsius2( int dummy);
+extern void print_time();
 
 //Mensagens
 //                    "1234567890123456"

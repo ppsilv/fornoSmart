@@ -6,6 +6,7 @@
 #define SERIAL_NUMBER     "20251215"
 #define MCU "UNO"
 #define VERSION_SIZE  0x10
+#define VERSION "1.0.0"
 
 extern i2c_rtc_m41t00s rtc;
 

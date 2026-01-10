@@ -37,6 +37,12 @@ float getCelsius()
     thermoCouple.read();
     return thermoCouple.getCelsius();
 }
+float getCelsius2( int dummy)
+{
+    delay(400);
+    thermoCouple.read();
+    return thermoCouple.getCelsius();
+}
 
 void sensorLoop()
 {

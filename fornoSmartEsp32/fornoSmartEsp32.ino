@@ -17,8 +17,11 @@ linha 144     int row_offsets[] = { 0x00, 0x40, 0x10, 0x50 };
 #define TASK_RUNNING_CORE 1
 #endif
 
+
 void TaskLed(void *pvParameters);
-void TaskTempControl(void *pvParameters);
+void TaskTempControlAutoTuner(void *pvParameters);
+void TaskTempControlBreattBeauregard(void *pvParameters);
+void TaskTempControlPid(void *pvParameters);
 
 //State machine
 static uint8_t estado=1;
@@ -44,6 +47,7 @@ void do_tela_assando_comida();
 #define AQUECENDO   5
 #define ASSANDO     6
 #define TELALOG     7
+
 void toneInit(){
   tone(ALTO_FALANTE, 1500);
   delay(250);
@@ -111,14 +115,20 @@ void tecla(){
 }
 
 void setup() {
-  setupLcd();
-
-  ota_setup();
-  Wire.begin();
   Serial.begin(115200);
 
+  Serial.println("Lcd setup");
+  setupLcd();
+
+  Serial.println("OTA setup");
+  ota_setup();
+  Serial.println("Wire setup");
+  Wire.begin();
+  Serial.println("Sensor temperatura setup");
   setupSensor();
+  Serial.println("Clock setup");
   setupClock();
+  Serial.println("Resistencia setup");
   setupResistencias();
 
   xTaskCreate(
@@ -132,8 +142,12 @@ void setup() {
     ,
     NULL  // Task handle is not used here - simply pass NULL
   );
+  
+#ifdef AUTO_TUNER
+  Serial.println("TaskTempControlAutoTuner setup");
+
   xTaskCreate(
-    TaskTempControl, "TempControl"  // A name just for humans
+    TaskTempControlAutoTuner, "TempControl"  // A name just for humans
     ,
     2048  // The stack size can be checked by calling `uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);`
     ,
@@ -143,14 +157,50 @@ void setup() {
     ,
     NULL  // Task handle is not used here - simply pass NULL
   );
+#endif
+
+#ifdef BREAT_BEAUREGARD
+  Serial.println("TaskTempControlBreattBeauregard setup");
+  xTaskCreate(
+    TaskTempControlBreattBeauregard, "TempControl"  // A name just for humans
+    ,
+    2048  // The stack size can be checked by calling `uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);`
+    ,
+    NULL  // Task parameter which can modify the task behavior. This must be passed as pointer to void.
+    ,
+    2  // Priority
+    ,
+    NULL  // Task handle is not used here - simply pass NULL
+  );
+#endif
+
+#ifdef ON_OFF_RELAY
+  Serial.println("TaskTempControlPid setup");
+  xTaskCreate(
+    TaskTempControlPid, "TempControl"  // A name just for humans
+    ,
+    2048  // The stack size can be checked by calling `uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);`
+    ,
+    NULL  // Task parameter which can modify the task behavior. This must be passed as pointer to void.
+    ,
+    2  // Priority
+    ,
+    NULL  // Task handle is not used here - simply pass NULL
+  );
+#endif
+  Serial.println("Altofalante setup");
   pinMode(ALTO_FALANTE, OUTPUT); 
+  Serial.println("Clear lcd");
   lcd.clear();
+  Serial.println("tone init");
   toneInit();
+  Serial.println("tone init1");
   toneInit1();
 }
 
 void loop() {
   ArduinoOTA.handle();
+  Serial.print("o");
 
   switch( estado ){
     case TELAINICIAL:
@@ -183,10 +233,9 @@ void loop() {
 /*--------------------------------------------------*/
 
 void TaskLed(void *pvParameters) {
-
   pinMode(LED, OUTPUT);
   for (;;) {                        
-    //digitalWrite(LED, HIGH); 
+    ArduinoOTA.handle();
     analogWrite( LED, 25);
     delay(500);
     analogWrite( LED, 0);
@@ -194,7 +243,109 @@ void TaskLed(void *pvParameters) {
   }
 }
 
-void TaskTempControl(void *pvParameters) {
+#ifdef AUTO_TUNER
+TEM ALGUM PROBLEMA COM A IMPLEMENTAÇÃO DO AUTO TUNER E TaskTempControlBreattBeauregard.
+Trava o loop e TaskTempControlBreattBeauregard ou TaskTempControlAutoTuner
+
+PID pid = PID();
+
+void outputFunc(double x) {
+  analogWrite(RESISTENCIAS, x);
+}
+
+void TaskTempControlAutoTuner(void *pvParameters)
+{
+  Serial.println("turner setup");
+  pid_tuner tuner = pid_tuner(pid, 10, 250000000, pid_tuner::CLASSIC_PID);
+
+  tuner.setConstrains(0, 255);
+  tuner.setTargetValue(temperatura_para_assar);
+
+  // Initialize the tuning loop
+  Serial.println("startTuningLoop");
+  tuner.startTuningLoop(micros());
+  uint64_t time=0;
+  // Main tuning loop
+  for(;;){
+    Serial.print(".");
+    while(!tuner.isDone()) {
+      Serial.print(":");
+      if(get_temp_flag){
+        Serial.print(";");
+        tuner.setTargetValue(temperatura_para_assar);
+        time = micros();
+        // Obtain input value from the input function
+        double input = getCelsius();
+        // Compute output value using the tuning loop
+        double output = tuner.tuningLoop(input, time);
+        // Send output value to the output function
+        outputFunc(output);
+        // Wait until the loop interval elapses
+        //while(micros() - _time < _loop_interval) {
+        //  delayMicroseconds(1);    
+        //}
+        delay(250);    
+      }
+      // Send final output value of 0 to the output function
+      //outputFunc(0);
+      // Set the tuned PID constants in the PID controller
+      //tuner.setConstantes();
+    }
+    delay(250);    
+  }
+}
+#endif
+
+#ifdef BREAT_BEAUREGARD
+TEM ALGUM PROBLEMA COM A IMPLEMENTAÇÃO DO AUTO TUNER E TaskTempControlBreattBeauregard.
+Trava o loop e TaskTempControlBreattBeauregard ou TaskTempControlAutoTuner
+//Não testada
+void TaskTempControlBreattBeauregard(void *pvParameters)
+{
+  int PWM_pin = RESISTENCIAS;  //Pin for PWM signal to the MOSFET driver (the BJT npn with pullup)
+  // Define variables for Input, Output, and Setpoint
+  double Input, Output, Setpoint;
+  // Define PID tuning parameters
+  double Kp=2, Ki=0.1, Kd=0.05; 
+  // Specify the PID controller
+  PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT); // or REVERSE if needed
+
+  // Set initial setpoint
+  Setpoint = 100.0; // Example: target temperature or speed
+
+  // Tell the PID to start controlling
+  myPID.SetMode(AUTOMATIC);
+  // Constrain the output to a usable range (e.g., 0-255 for analogWrite)
+  myPID.SetOutputLimits(0, 255); 
+
+  for (;;){
+    if( get_temp_flag ){
+      // 1. Read the sensor value
+      delay(250);
+      Setpoint = temperatura_para_assar;
+      Input =  getCelsius();    //analogRead(sensorPin); 
+
+      // 2. Compute the PID output
+      myPID.Compute(); // Runs the PID calculation automatically
+
+      // 3. Control the actuator using the Output value
+      analogWrite(PWM_pin, Output);
+
+      // 4. (Optional) Print values to Serial Plotter for tuning
+      Serial.print("Setpoint:");
+      Serial.print(Setpoint);
+      Serial.print(" Input:");
+      Serial.print(Input);
+      Serial.print(" Output:");
+      Serial.println(Output);    
+    }
+  }
+}
+#endif
+
+#ifdef ON_OFF_RELAY
+//Testada funciona perfeitamente.
+void TaskTempControlPid(void *pvParameters) {
   Serial.print("TaskTempControl:temperatura_para_assar ");
   Serial.println(temperatura_para_assar);
 
@@ -276,7 +427,9 @@ void TaskTempControl(void *pvParameters) {
     delay(125);
   }
 }
-
+#endif
+#ifdef ON_OFF_RELAY
+/*
 void TaskTempControNoPid(void *pvParameters) {
   float temp_lida = getCelsius();
   Serial.print("TaskTempControl:temperatura_para_assar ");
@@ -299,11 +452,13 @@ void TaskTempControNoPid(void *pvParameters) {
     delay(500);
   }
 }
+*/
+#endif
 
 void do_tela_inicial(){
   uint8_t key=0;
   lcd.clear();
-  float temp_lida = getCelsius();
+  float temp_lida = 0; // getCelsius();
 
   key = getKey();
   while( key == NO_KEY ){
@@ -467,6 +622,7 @@ void do_tela_aquecendo_resistencias(){
     }
   }
 }
+/*
 void do_tela_aquecendo_resistenciasNoPid(){
   CTimer timer_para_aquecer= CTimer(500);
   uint8_t pisca_info=1;
@@ -508,7 +664,7 @@ void do_tela_aquecendo_resistenciasNoPid(){
     }
   }
 }
-
+*/
 void do_tela_assando_comida(){
   uint8_t key=0;
   float temp_lida = getCelsius();

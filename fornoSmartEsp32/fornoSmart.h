@@ -32,6 +32,20 @@
 #include <time.h>
 #include <string.h> // For memset, good practice
 
+//Escolha somente 1 dos 3 abaixo
+//#define BREAT_BEAUREGARD  1
+//#define AUTO_TUNER        1
+#define ON_OFF_RELAY      1
+
+#ifdef BREAT_BEAUREGARD
+#include "PID_v1.h"
+#elif  AUTO_TUNER
+#include "pid-autotune.h"
+#else
+#undef BREAT_BEAUREGARD
+#undef AUTO_TUNER
+#endif
+
 extern void ota_setup();
 
 //#define LED_FREQUENCY     500
@@ -107,6 +121,7 @@ extern void tecla();
 extern void turn_back_light();
 extern void turn_on_back_light();
 extern void turn_off_back_light();
+extern float getCelsius2( int dummy);
 
 //Mensagens
 //                    "1234567890123456"
